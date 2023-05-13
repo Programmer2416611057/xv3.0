@@ -1,0 +1,39 @@
+import matplotlib.pyplot as plt
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup
+import datetime
+
+
+url = "https://tianqi.2345.com/wea_history/59289.htm"
+header = {
+    'User-Agent': 'Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.1; WOW64; Trident/4.0; SLCC2; Media Center PC 6.0; InfoPath.2; MS-RTC LM 8'
+}
+response = requests.get(url=url, headers=header)
+response.encoding = "utf-8"
+bs = BeautifulSoup(response.text, 'html.parser')
+temp=[]
+weather = bs.find_all('td', style="color:#ff5040;")
+date2 = bs.find_all('td')
+for i in range(len(weather)):
+    temp.append(weather[i].text.split())
+
+
+date=[]
+for i in range(24):
+    date.append(date2[i*6].text.split())
+
+with open('data.csv', 'w') as file:
+    file.write('历史高温,日期' + '\n')
+    for i in range(len(temp)):
+        data = temp[i][0] + ',' +date[i][0] + "\n"
+        file.write(data)
+
+
+data = pd.read_csv('data.csv', encoding="gbk")
+plt.rcParams['font.family'] = ['SimHei']
+plt.bar(data['日期'], data['历史高温'])
+plt.title("八月份高温柱状图")
+plt.xlabel("日期")
+plt.ylabel("温度（℃）")
+plt.show()
